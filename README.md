@@ -71,18 +71,20 @@ curl --location 'http://localhost:3000/invoke' \
 --data '{
     "channelid": "mychannel",
     "chaincodeid": "basic",
-    "function": "createAsset",
-    "args": [
-        "NghiaHln",
-        "yellow",
-        "54",
-        "Tom",
-        "13005"
-    ]
+    "function": "CreateTodoItem",
+    "args": {
+        "ID": "todo5",
+        "Description": "Test Todo Item",
+        "Owner": "John",
+        "Status": "Pending",
+        "StartDate": "2023-01-01T00:00:00Z",
+        "EndDate": "2023-01-07T00:00:00Z",
+        "Priority": 2
+    }
 }'
 ```
 API GET:
 ```curl
-curl --location 'http://localhost:3000/query?channelid=mychannel&chaincodeid=basic&function=GetAllAssets&args=NghiaHln'
+curl --location 'http://localhost:3000/query?channelid=mychannel&chaincodeid=basic&function=GetAllTodoItems'
 ```
 
