@@ -64,7 +64,7 @@ Done!
 
 sample api to test
 
-API POST:
+API POST CREATE:
 ```curl
 curl --location 'http://localhost:3000/invoke' \
 --header 'content-type: application/json' \
@@ -83,8 +83,45 @@ curl --location 'http://localhost:3000/invoke' \
     }
 }'
 ```
-API GET:
+API GET ALL:
 ```curl
 curl --location 'http://localhost:3000/query?channelid=mychannel&chaincodeid=basic&function=GetAllTodoItems'
 ```
+API GET DETAIL:
+```curl
+curl --location 'http://localhost:3000/query?channelid=mychannel&chaincodeid=basic&function=ReadTodoItem&args=todo1'
+```
 
+API PUT UPDATE:
+```curl
+curl --location --request PUT 'http://localhost:3000/invoke' \
+--header 'content-type: application/json' \
+--data '{
+    "channelid": "mychannel",
+    "chaincodeid": "basic",
+    "function": "UpdateTodoItem",
+    "args": {
+        "ID": "todo1",
+        "Description": "Test Todo Item",
+        "Owner": "John",
+        "Status": "Pending",
+        "StartDate": "2023-01-01T00:00:00Z",
+        "EndDate": "2023-01-07T00:00:00Z",
+        "Priority": 2
+    }
+}'
+```
+
+API PUT UPDATE:
+```curl
+curl --location --request DELETE 'http://localhost:3000/delete' \
+--header 'content-type: application/json' \
+--data '{
+    "channelid": "mychannel",
+    "chaincodeid": "basic",
+    "function": "DeleteTodoItem",
+    "args": [
+        "todo1"
+    ]
+}'
+```
