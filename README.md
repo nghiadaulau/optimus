@@ -43,7 +43,7 @@ If you already have a test network running, bring it down to ensure the environm
 ```
 Launch the Fabric test network using the network.sh shell script.
 ```shell
-./network.sh up createChannel -c mychannel -ca
+./network.sh up createChannel -c mychannel -ca -s couchdb
 ```
 Deploy the smart contract
 -------------------------
@@ -55,7 +55,7 @@ Deploy the smart contract
 # Run Restful API with Golang
 Preparation steps:
 1. Access the folder /networking/organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/signcerts/
-2. Create a cert.pem file from the *-cert.pem file
+2. Create a cert.pem file from the *-cert.pem file (if it doesn't exist.)
 3. Access the transfer/rest-api-go directory and execute the command
 ```
 go run main.go
@@ -112,7 +112,7 @@ curl --location --request PUT 'http://localhost:3000/invoke' \
 }'
 ```
 
-API PUT UPDATE:
+API DELETE:
 ```curl
 curl --location --request DELETE 'http://localhost:3000/delete' \
 --header 'content-type: application/json' \
