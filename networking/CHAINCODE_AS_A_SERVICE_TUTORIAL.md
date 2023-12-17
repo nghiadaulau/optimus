@@ -23,7 +23,7 @@ It's useful to have two terminal windows open, one for starting the Fabric Netwo
 In your 'monitoring' window, run this to watch all activity from the all the docker containers on the `fabric_test` network; this will monitor all the docker containers that are added to the `fabric-test` network. The network is usually created by the `./network.sh up` command, so remember to delay running this until at least the network is created. It is possible to precreate the network with `docker network create fabric-test` if you wish.
 
 ```bash
-# from the fabric-samples repo
+# from the optimus repo
 ./networking/monitordocker.sh
 ```
 
