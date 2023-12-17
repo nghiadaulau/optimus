@@ -3,192 +3,187 @@ package chaincode
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
 
-// SmartContract provides functions for managing an Asset
+// SmartContract provides functions for managing a TodoList
 type SmartContract struct {
 	contractapi.Contract
 }
 
-// Asset describes basic details of what makes up a simple asset
-// Insert struct field in alphabetic order => to achieve determinism across languages
-// golang keeps the order when marshal to json but doesn't order automatically
-type Asset struct {
-	AppraisedValue int    `json:"AppraisedValue"`
-	Color          string `json:"Color"`
-	ID             string `json:"ID"`
-	Owner          string `json:"Owner"`
-	Size           int    `json:"Size"`
+// TodoItem describes basic details of what makes up a Todo item
+type TodoItem struct {
+	ID          string    `json:"ID"`
+	Description string    `json:"Description"`
+	Owner       string    `json:"Owner"`
+	Status      string    `json:"Status"`
+	StartDate   time.Time `json:"StartDate"`
+	EndDate     time.Time `json:"EndDate"`
+	Priority    int       `json:"Priority"`
 }
 
-// InitLedger adds a base set of assets to the ledger
+// InitLedger adds a base set of todo items to the ledger
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
-	assets := []Asset{
-		{ID: "asset1", Color: "blue", Size: 5, Owner: "Tomoko", AppraisedValue: 300},
-		{ID: "asset2", Color: "red", Size: 5, Owner: "Brad", AppraisedValue: 400},
-		{ID: "asset3", Color: "green", Size: 10, Owner: "Jin Soo", AppraisedValue: 500},
-		{ID: "asset4", Color: "yellow", Size: 10, Owner: "Max", AppraisedValue: 600},
-		{ID: "asset5", Color: "black", Size: 15, Owner: "Adriana", AppraisedValue: 700},
-		{ID: "asset6", Color: "white", Size: 15, Owner: "Michel", AppraisedValue: 800},
+	todoItems := []TodoItem{
+		{ID: "todo1", Description: "Buy groceries", Owner: "Tomoko", Status: "Pending", StartDate: time.Now(), EndDate: time.Now().AddDate(0, 0, 7), Priority: 1},
+		{ID: "todo2", Description: "Finish report", Owner: "Brad", Status: "InProgress", StartDate: time.Now(), EndDate: time.Now().AddDate(0, 0, 14), Priority: 2},
+		{ID: "todo3", Description: "Exercise", Owner: "Jin Soo", Status: "Pending", StartDate: time.Now(), EndDate: time.Now().AddDate(0, 0, 5), Priority: 3},
+		{ID: "todo4", Description: "Read a book", Owner: "Max", Status: "Completed", StartDate: time.Now(), EndDate: time.Now().AddDate(0, 0, 10), Priority: 1},
 	}
 
-	for _, asset := range assets {
-		assetJSON, err := json.Marshal(asset)
+	for _, item := range todoItems {
+		itemJSON, err := json.Marshal(item)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to marshal todo item: %v", err)
 		}
 
-		err = ctx.GetStub().PutState(asset.ID, assetJSON)
+		err = ctx.GetStub().PutState(item.ID, itemJSON)
 		if err != nil {
-			return fmt.Errorf("failed to put to world state. %v", err)
+			return fmt.Errorf("failed to put todo item to world state: %v", err)
 		}
 	}
 
 	return nil
 }
 
-// CreateAsset issues a new asset to the world state with given details.
-func (s *SmartContract) CreateAsset(ctx contractapi.TransactionContextInterface, id string, color string, size int, owner string, appraisedValue int) error {
-	exists, err := s.AssetExists(ctx, id)
+// CreateTodoItem issues a new todo item to the world state with given details.
+func (s *SmartContract) CreateTodoItem(ctx contractapi.TransactionContextInterface, id string, description string, owner string, status string, startDate time.Time, endDate time.Time, priority int) error {
+	exists, err := s.TodoItemExists(ctx, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("error checking if todo item exists: %v", err)
 	}
 	if exists {
-		return fmt.Errorf("the asset %s already exists", id)
+		return fmt.Errorf("the todo item %s already exists", id)
 	}
 
-	asset := Asset{
-		ID:             id,
-		Color:          color,
-		Size:           size,
-		Owner:          owner,
-		AppraisedValue: appraisedValue,
+	item := TodoItem{
+		ID:          id,
+		Description: description,
+		Owner:       owner,
+		Status:      status,
+		StartDate:   startDate,
+		EndDate:     endDate,
+		Priority:    priority,
 	}
-	assetJSON, err := json.Marshal(asset)
+	itemJSON, err := json.Marshal(item)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal todo item: %v", err)
 	}
 
-	return ctx.GetStub().PutState(id, assetJSON)
+	err = ctx.GetStub().PutState(id, itemJSON)
+	if err != nil {
+		return fmt.Errorf("failed to put todo item to world state: %v", err)
+	}
+
+	return nil
 }
 
-// ReadAsset returns the asset stored in the world state with given id.
-func (s *SmartContract) ReadAsset(ctx contractapi.TransactionContextInterface, id string) (*Asset, error) {
-	assetJSON, err := ctx.GetStub().GetState(id)
+// ReadTodoItem returns the todo item stored in the world state with given id.
+func (s *SmartContract) ReadTodoItem(ctx contractapi.TransactionContextInterface, id string) (*TodoItem, error) {
+	itemJSON, err := ctx.GetStub().GetState(id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read from world state: %v", err)
 	}
-	if assetJSON == nil {
-		return nil, fmt.Errorf("the asset %s does not exist", id)
+	if itemJSON == nil {
+		return nil, fmt.Errorf("the todo item %s does not exist", id)
 	}
 
-	var asset Asset
-	err = json.Unmarshal(assetJSON, &asset)
+	var item TodoItem
+	err = json.Unmarshal(itemJSON, &item)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to unmarshal todo item: %v", err)
 	}
 
-	return &asset, nil
+	return &item, nil
 }
 
-// UpdateAsset updates an existing asset in the world state with provided parameters.
-func (s *SmartContract) UpdateAsset(ctx contractapi.TransactionContextInterface, id string, color string, size int, owner string, appraisedValue int) error {
-	exists, err := s.AssetExists(ctx, id)
+// UpdateTodoItem updates an existing todo item in the world state with provided parameters.
+func (s *SmartContract) UpdateTodoItem(ctx contractapi.TransactionContextInterface, id string, description string, owner string, status string, startDate time.Time, endDate time.Time, priority int) error {
+	exists, err := s.TodoItemExists(ctx, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("error checking if todo item exists: %v", err)
 	}
 	if !exists {
-		return fmt.Errorf("the asset %s does not exist", id)
+		return fmt.Errorf("the todo item %s does not exist", id)
 	}
 
-	// overwriting original asset with new asset
-	asset := Asset{
-		ID:             id,
-		Color:          color,
-		Size:           size,
-		Owner:          owner,
-		AppraisedValue: appraisedValue,
+	// Overwriting original todo item with new todo item
+	item := TodoItem{
+		ID:          id,
+		Description: description,
+		Owner:       owner,
+		Status:      status,
+		StartDate:   startDate,
+		EndDate:     endDate,
+		Priority:    priority,
 	}
-	assetJSON, err := json.Marshal(asset)
+	itemJSON, err := json.Marshal(item)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal todo item: %v", err)
 	}
 
-	return ctx.GetStub().PutState(id, assetJSON)
+	err = ctx.GetStub().PutState(id, itemJSON)
+	if err != nil {
+		return fmt.Errorf("failed to put todo item to world state: %v", err)
+	}
+
+	return nil
 }
 
-// DeleteAsset deletes an given asset from the world state.
-func (s *SmartContract) DeleteAsset(ctx contractapi.TransactionContextInterface, id string) error {
-	exists, err := s.AssetExists(ctx, id)
+// DeleteTodoItem deletes a given todo item from the world state.
+func (s *SmartContract) DeleteTodoItem(ctx contractapi.TransactionContextInterface, id string) error {
+	exists, err := s.TodoItemExists(ctx, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("error checking if todo item exists: %v", err)
 	}
 	if !exists {
-		return fmt.Errorf("the asset %s does not exist", id)
+		return fmt.Errorf("the todo item %s does not exist", id)
 	}
 
-	return ctx.GetStub().DelState(id)
+	err = ctx.GetStub().DelState(id)
+	if err != nil {
+		return fmt.Errorf("failed to delete todo item from world state: %v", err)
+	}
+
+	return nil
 }
 
-// AssetExists returns true when asset with given ID exists in world state
-func (s *SmartContract) AssetExists(ctx contractapi.TransactionContextInterface, id string) (bool, error) {
-	assetJSON, err := ctx.GetStub().GetState(id)
+// TodoItemExists returns true when todo item with given ID exists in world state
+func (s *SmartContract) TodoItemExists(ctx contractapi.TransactionContextInterface, id string) (bool, error) {
+	itemJSON, err := ctx.GetStub().GetState(id)
 	if err != nil {
 		return false, fmt.Errorf("failed to read from world state: %v", err)
 	}
 
-	return assetJSON != nil, nil
+	return itemJSON != nil, nil
 }
 
-// TransferAsset updates the owner field of asset with given id in world state, and returns the old owner.
-func (s *SmartContract) TransferAsset(ctx contractapi.TransactionContextInterface, id string, newOwner string) (string, error) {
-	asset, err := s.ReadAsset(ctx, id)
-	if err != nil {
-		return "", err
-	}
-
-	oldOwner := asset.Owner
-	asset.Owner = newOwner
-
-	assetJSON, err := json.Marshal(asset)
-	if err != nil {
-		return "", err
-	}
-
-	err = ctx.GetStub().PutState(id, assetJSON)
-	if err != nil {
-		return "", err
-	}
-
-	return oldOwner, nil
-}
-
-// GetAllAssets returns all assets found in world state
-func (s *SmartContract) GetAllAssets(ctx contractapi.TransactionContextInterface) ([]*Asset, error) {
-	// range query with empty string for startKey and endKey does an
-	// open-ended query of all assets in the chaincode namespace.
+// GetAllTodoItems returns all todo items found in world state
+func (s *SmartContract) GetAllTodoItems(ctx contractapi.TransactionContextInterface) ([]*TodoItem, error) {
+	// Range query with empty string for startKey and endKey does an
+	// open-ended query of all todo items in the chaincode namespace.
 	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get state by range: %v", err)
 	}
 	defer resultsIterator.Close()
 
-	var assets []*Asset
+	var items []*TodoItem
 	for resultsIterator.HasNext() {
 		queryResponse, err := resultsIterator.Next()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to get next query response: %v", err)
 		}
 
-		var asset Asset
-		err = json.Unmarshal(queryResponse.Value, &asset)
+		var item TodoItem
+		err = json.Unmarshal(queryResponse.Value, &item)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to unmarshal todo item: %v", err)
 		}
-		assets = append(assets, &asset)
+		items = append(items, &item)
 	}
 
-	return assets, nil
+	return items, nil
 }

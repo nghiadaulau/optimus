@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
+
+	_ "github.com/hyperledger/fabric-gateway/pkg/client"
 )
 
 type APIResponse struct {
@@ -12,20 +15,24 @@ type APIResponse struct {
 	Data    interface{} `json:"data,omitempty"`
 }
 
-type Asset struct {
-	AppraisedValue int    `json:"AppraisedValue"`
-	Color          string `json:"Color"`
-	ID             string `json:"ID"`
-	Owner          string `json:"Owner"`
-	Size           int    `json:"Size"`
+type TodoItem struct {
+	ID          string    `json:"ID"`
+	Description string    `json:"Description"`
+	Owner       string    `json:"Owner"`
+	Status      string    `json:"Status"`
+	StartDate   time.Time `json:"StartDate"`
+	EndDate     time.Time `json:"EndDate"`
+	Priority    int       `json:"Priority"`
 }
 
-type AllAsset []struct {
-	AppraisedValue int    `json:"AppraisedValue"`
-	Color          string `json:"Color"`
-	ID             string `json:"ID"`
-	Owner          string `json:"Owner"`
-	Size           int    `json:"Size"`
+type AllTodoItems []struct {
+	ID          string    `json:"ID"`
+	Description string    `json:"Description"`
+	Owner       string    `json:"Owner"`
+	Status      string    `json:"Status"`
+	StartDate   time.Time `json:"StartDate"`
+	EndDate     time.Time `json:"EndDate"`
+	Priority    int       `json:"Priority"`
 }
 
 // Query handles chaincode query requests.
@@ -48,14 +55,14 @@ func (setup OrgSetup) Query(w http.ResponseWriter, r *http.Request) {
 		writeJSONResponse(w, response)
 		return
 	}
-	if function == "GetAllAssets" {
-		var responseData AllAsset
+	if function == "GetAllTodoItems" {
+		var responseData AllTodoItems
 		// Replace YourStructType with the actual type of your response
 		if err := json.Unmarshal(evaluateResponse, &responseData); err != nil {
 			response := APIResponse{
 				Status:  "error",
 				Message: "Query error",
-				Data:    Asset{}}
+				Data:    TodoItem{}}
 			writeJSONResponse(w, response)
 			return
 		}
@@ -68,13 +75,13 @@ func (setup OrgSetup) Query(w http.ResponseWriter, r *http.Request) {
 		writeJSONResponse(w, response)
 	} else {
 
-		var responseData Asset
+		var responseData TodoItem
 		// Replace YourStructType with the actual type of your response
 		if err := json.Unmarshal(evaluateResponse, &responseData); err != nil {
 			response := APIResponse{
 				Status:  "error",
 				Message: "Query error",
-				Data:    Asset{}}
+				Data:    TodoItem{}}
 			writeJSONResponse(w, response)
 			return
 		}
@@ -92,5 +99,8 @@ func (setup OrgSetup) Query(w http.ResponseWriter, r *http.Request) {
 func writeJSONResponse(w http.ResponseWriter, response APIResponse) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	err := json.NewEncoder(w).Encode(response)
+	if err != nil {
+		return
+	}
 }

@@ -3,10 +3,9 @@ package web
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/hyperledger/fabric-gateway/pkg/client"
 	"io/ioutil"
 	"net/http"
-
-	"github.com/hyperledger/fabric-gateway/pkg/client"
 )
 
 // InvokeResponse represents the structure of the invoke API response.
@@ -33,7 +32,7 @@ func writeJSONError(w http.ResponseWriter, errorMessage string) {
 	writeInvokeJSONResponse(w, response)
 }
 
-// Invoke handles chaincode invoke requests.
+// Invoke handles chaincode invoke requests for TodoItem smart contract.
 func (setup *OrgSetup) Invoke(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Received Invoke request")
 
@@ -46,10 +45,18 @@ func (setup *OrgSetup) Invoke(w http.ResponseWriter, r *http.Request) {
 
 	// Define a struct to unmarshal the JSON request body
 	var request struct {
-		ChainCodeID string   `json:"chaincodeid"`
-		ChannelID   string   `json:"channelid"`
-		Function    string   `json:"function"`
-		Args        []string `json:"args"`
+		ChainCodeID string `json:"chaincodeid"`
+		ChannelID   string `json:"channelid"`
+		Function    string `json:"function"`
+		Args        struct {
+			ID          string `json:"ID,omitempty"`
+			Description string `json:"Description,omitempty"`
+			Owner       string `json:"Owner,omitempty"`
+			Status      string `json:"Status,omitempty"`
+			StartDate   string `json:"StartDate,omitempty"`
+			EndDate     string `json:"EndDate,omitempty"`
+			Priority    int    `json:"Priority,omitempty"`
+		} `json:"args"`
 	}
 
 	// Unmarshal the JSON into the request struct
@@ -63,7 +70,15 @@ func (setup *OrgSetup) Invoke(w http.ResponseWriter, r *http.Request) {
 	chainCodeName := request.ChainCodeID
 	channelID := request.ChannelID
 	function := request.Function
-	args := request.Args
+	args := []string{
+		request.Args.ID,
+		request.Args.Description,
+		request.Args.Owner,
+		request.Args.Status,
+		request.Args.StartDate,
+		request.Args.EndDate,
+		fmt.Sprintf("%d", request.Args.Priority),
+	}
 
 	fmt.Printf("channel: %s, chaincode: %s, function: %s, args: %s\n", channelID, chainCodeName, function, args)
 
