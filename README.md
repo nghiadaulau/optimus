@@ -6,6 +6,7 @@ Step by step to run project.
 3. Nodejs >= 18
 4. JQ >= 1.6
 5. cURL
+6. Golang version 20.x
 
 ## Step 1:
 Get install script:
