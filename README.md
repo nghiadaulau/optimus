@@ -25,6 +25,8 @@ Choosing which version
 ```shell
 ./install-fabric.sh --fabric-version 2.5.5 binary
 ```
+
+**<font color="red">Note: After installation is complete, go to the config folder, access the core.yaml file, then edit the stateDatabase to CouchDB so you can use CouchDB and GetQueryResult!</font>**
 ## Step 2:
 The Asset Transfer (basic) sample demonstrates how to create, update, and query assets. It involves the following two components:
 ```text
