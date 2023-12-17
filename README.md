@@ -49,10 +49,40 @@ Deploy the smart contract
 -------------------------
 
 ```shell
-./network.sh deployCC -ccn basic -ccp ../asset-transfer-basic/chaincode-go -ccl go
+./network.sh deployCC -ccn basic -ccp ../transfer/chaincode-go -ccl go
 ```
 
 # Run Restful API with Golang
+Preparation steps:
+1. Access the folder /networking/organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/signcerts/
+2. Create a cert.pem file from the *-cert.pem file
+3. Access the transfer/rest-api-go directory and execute the command
+```
+go run main.go
+```
+Done!
 
+sample api to test
 
+API POST:
+```curl
+curl --location 'http://localhost:3000/invoke' \
+--header 'content-type: application/json' \
+--data '{
+    "channelid": "mychannel",
+    "chaincodeid": "basic",
+    "function": "createAsset",
+    "args": [
+        "NghiaHln",
+        "yellow",
+        "54",
+        "Tom",
+        "13005"
+    ]
+}'
+```
+API GET:
+```curl
+curl --location 'http://localhost:3000/query?channelid=mychannel&chaincodeid=basic&function=GetAllAssets&args=NghiaHln'
+```
 
