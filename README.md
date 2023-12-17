@@ -125,3 +125,14 @@ curl --location --request DELETE 'http://localhost:3000/delete' \
     ]
 }'
 ```
+
+API SEARCH:
+```curl
+curl --location 'http://localhost:3000/search' \
+--header 'Content-Type: application/json' \
+--data '{
+    "channelid": "mychannel",
+    "chaincodeid": "basic",
+    "status": "Pending"
+}'
+```

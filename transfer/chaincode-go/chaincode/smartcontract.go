@@ -24,6 +24,11 @@ type TodoItem struct {
 	Priority    int       `json:"Priority"`
 }
 
+// SearchCriteria represents the criteria for searching TodoItems
+type SearchCriteria struct {
+	Status string `json:"status"`
+}
+
 // InitLedger adds a base set of todo items to the ledger
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	todoItems := []TodoItem{
@@ -167,6 +172,38 @@ func (s *SmartContract) GetAllTodoItems(ctx contractapi.TransactionContextInterf
 	resultsIterator, err := ctx.GetStub().GetStateByRange("", "")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get state by range: %v", err)
+	}
+	defer resultsIterator.Close()
+
+	var items []*TodoItem
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get next query response: %v", err)
+		}
+
+		var item TodoItem
+		err = json.Unmarshal(queryResponse.Value, &item)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal todo item: %v", err)
+		}
+		items = append(items, &item)
+	}
+
+	return items, nil
+}
+
+// SearchTodoItems returns a list of todo items that match the specified criteria.
+func (s *SmartContract) SearchTodoItems(ctx contractapi.TransactionContextInterface, status string) ([]*TodoItem, error) {
+	queryString := fmt.Sprintf(`{
+        "selector": {
+            "Status": "%s"
+        }
+    }`, status)
+
+	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get query result: %v", err)
 	}
 	defer resultsIterator.Close()
 

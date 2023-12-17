@@ -81,7 +81,8 @@ func (setup OrgSetup) Query(w http.ResponseWriter, r *http.Request) {
 			response := APIResponse{
 				Status:  "error",
 				Message: "Query error",
-				Data:    TodoItem{}}
+				Data:    nil,
+			}
 			writeJSONResponse(w, response)
 			return
 		}

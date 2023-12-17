@@ -44,6 +44,7 @@ func Serve(setups OrgSetup) {
 	http.HandleFunc("/query", EnableCORS(setups.Query))
 	http.HandleFunc("/invoke", EnableCORS(setups.Invoke))
 	http.HandleFunc("/delete", EnableCORS(setups.Delete))
+	http.HandleFunc("/search", EnableCORS(setups.Search))
 	fmt.Println("Listening (http://localhost:3000/)...")
 	if err := http.ListenAndServe(":3000", nil); err != nil {
 		fmt.Println(err)
