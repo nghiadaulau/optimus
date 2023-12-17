@@ -28,11 +28,7 @@ Choosing which version
 
 **<font color="red">Note: After installation is complete, go to the config folder, access the core.yaml file, then edit the stateDatabase to CouchDB so you can use CouchDB and GetQueryResult!</font>**
 ## Step 2:
-The Asset Transfer (basic) sample demonstrates how to create, update, and query assets. It involves the following two components:
-```text
-asset-transfer-basic/application-gateway-typescript
-asset-transfer-basic/chaincode-typescript
-```
+
 Launch the blockchain network
 ---------------
 
@@ -45,7 +41,7 @@ If you already have a test network running, bring it down to ensure the environm
 ```
 Launch the Fabric test network using the network.sh shell script.
 ```shell
-./network.sh up createChannel -c mychannel -ca -s couchdb
+./network.sh up createChannel -c mychannel -s couchdb -ca
 ```
 Deploy the smart contract
 -------------------------
