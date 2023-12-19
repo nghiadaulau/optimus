@@ -7,6 +7,7 @@ import CardBox from "@/components/CardBox.vue";
 import OverlayLayer from "@/components/OverlayLayer.vue";
 import CardBoxComponentTitle from "@/components/CardBoxComponentTitle.vue";
 import { useContractStore } from "@/stores/contract";
+import { FulfillingBouncingCircleSpinner } from "epic-spinners";
 
 const branchStore = useContractStore();
 
@@ -57,6 +58,7 @@ const sleep = (milliseconds) => {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 };
 const isSaveButtonClicked = ref(false);
+const showpb = ref(false);
 
 const deleteItem = async () => {
   if (!isSaveButtonClicked.value) {
@@ -64,8 +66,10 @@ const deleteItem = async () => {
     const jsonData = setBranchData();
     const rep = await branchStore.deleteTodoList(jsonData);
     if (rep.data.status == "success") {
-      await sleep(3000);
       value.value = false;
+      showpb.value = true;
+      await sleep(3000);
+      showpb.value = false;
       emit("delete");
     }
     isSaveButtonClicked.value = false;
@@ -82,6 +86,16 @@ window.addEventListener("keydown", (e) => {
 </script>
 
 <template>
+  <OverlayLayer v-show="showpb">
+    <CardBox>
+      <fulfilling-bouncing-circle-spinner
+        :animation-duration="4000"
+        :size="100"
+        color="#0000FF"
+      />
+      /></CardBox
+    >
+  </OverlayLayer>
   <OverlayLayer v-show="value" @overlay-click="cancel">
     <CardBox
       v-show="value"

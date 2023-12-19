@@ -10,6 +10,7 @@ import FormField from "./FormField.vue";
 import FormControl from "./FormControl.vue";
 import { useContractStore } from "@/stores/contract";
 import { v4 as uuidv4 } from "uuid";
+import { FulfillingBouncingCircleSpinner } from "epic-spinners";
 
 const branchStore = useContractStore();
 
@@ -77,7 +78,7 @@ const sleep = (milliseconds) => {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 };
 const isSaveButtonClicked = ref(false);
-
+const showpb = ref(false);
 const confirmCancel = async (mode) => {
   if (!isSaveButtonClicked.value) {
     isSaveButtonClicked.value = true;
@@ -85,9 +86,11 @@ const confirmCancel = async (mode) => {
       const jsonData = setBranchData(selectedValues);
       const rep = await branchStore.createTodoList(jsonData);
       if (rep.data.status == "success") {
-        await sleep(3000);
         value.value = false;
         resetSelectedValues();
+        showpb.value = true;
+        await sleep(3000);
+        showpb.value = false;
         emit(mode);
       }
     } else {
@@ -110,6 +113,16 @@ window.addEventListener("keydown", (e) => {
 </script>
 
 <template>
+  <OverlayLayer v-show="showpb">
+    <CardBox>
+      <fulfilling-bouncing-circle-spinner
+        :animation-duration="4000"
+        :size="100"
+        color="#0000FF"
+      />
+      /></CardBox
+    >
+  </OverlayLayer>
   <OverlayLayer v-show="value" @overlay-click="cancel">
     <CardBox
       v-show="value"
